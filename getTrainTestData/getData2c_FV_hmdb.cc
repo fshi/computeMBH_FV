@@ -61,10 +61,6 @@ int main() {
 	seed[1] = RNG(seed[0].next());
 	seed[2] = RNG(seed[0].next());
 
-	cout<<seed[0].next()<<" "<<seed[1].next()<<" "<<seed[2].next()<<endl;
-	cout<<seed[0].uniform(0, 20000)<<" "<<seed[1].uniform(0, 20000)<<" "<<seed[2].uniform(0, 20000)<<endl;
-	cout<<seed[0].next()<<" "<<seed[1].next()<<" "<<seed[2].next()<<endl;
-	cout<<seed[0].uniform(0, 20000)<<" "<<seed[1].uniform(0, 20000)<<" "<<seed[2].uniform(0, 20000)<<endl;
 
 #ifdef _GET_PROCESS_TIME_
 	clock_t starts, ends;
@@ -72,21 +68,19 @@ int main() {
 	double dura, dur0 = 0, dur1 = 0, dur2 = 0; 
 #endif
 
-	int samMethod=2, samNum = 0;
-	
-	if (samMethod != 1)
+	int samNum = 10000;
+	if(samNum < 1000 || samNum > 100000)
 	{
 		std::cout<<"How many samples do you want to use?  \nInput: ";
 		std::cin>>samNum;
 		std::cout<<"\n";
-		while (samNum<100 || samNum>30000)
+		if (samNum<1000 || samNum>100000)
 		{
 			std::cout<<"Wrong number of samples input! please re-input number of samples again (100-10000): ";
 			std::cin>>samNum;
 			std::cout<<"\n";
 		}
 	}
-
 
 	MBHparam * para = new MBHparam();
 	if (!para->readParam("MBH_parameters_input.txt", 1))
@@ -96,12 +90,10 @@ int main() {
 	}
 
 	stDetector dscpt(para); 
-	
-	int maxFrames = _maxFrames;
-
 	para->writeParam("MBH_parameters.txt");
 	delete para;
-
+		
+	int maxFrames = _maxFrames;
 	int clsNum = classNum;
 	while (clsNum <= 0)
 	{
@@ -153,13 +145,13 @@ int main() {
 	string fName[_channels],  gmmFile[_channels]; 
 	for (int i = 0; i < _channels; i++)
 	{
-		//fName[i] = (string)"randData100kc"  + (string)itoa(i,tmpCs,10) + (string)".dat";
+		//fName[i] = (string)"randData100kc"  + (string)itoa(i,tmpCs,10) + (string)".dat";  //input training data for computing GMMs
 		//gmmFile[i] = (string)"gmmResults"  + (string)itoa(i,tmpCs,10) + (string)".yml";
-		fName[i] = (string)"gmmResults"  + (string)itoa(i,tmpCs,10) + (string)".yml";
+		fName[i] = (string)"gmmResults"  + (string)itoa(i,tmpCs,10) + (string)".yml";  //pre-computed GMMs
 	}
 	
-	fvEncoding fvFt(fName, _channels, _Dim, _numClusters, 2, NULL);
-	//fvEncoding fvFt(fName, _channels, _Dim, _numClusters, 0, gmmFile);
+	fvEncoding fvFt(fName, _channels, _Dim, _numClusters, 2, NULL);  //use pre-computed GMMs
+	//fvEncoding fvFt(fName, _channels, _Dim, _numClusters, 0, gmmFile); // compute GMMs with input files(fName)
 	int fvDim = fvFt.getFVdim();
 	cout<<"Done initializing GMM!"<<endl;
 
@@ -181,29 +173,15 @@ int main() {
 		ftCols[i+1] = ((i%2) ?  partsSz : rootSz ) + ftCols[i];
 	}
 
-	string fullName,  ofName[2];
 	string dNm, dName;
-
 	string inFileNm[2];
-
-/*
-	bool useGpu = 0;
-	useGpu = gpu::getCudaEnabledDeviceCount();
-	if (useGpu)
-		cout<<gpu::getCudaEnabledDeviceCount()<<" CUDA GPU is available. Will use gpu to compute bag of words model."<<endl;
-	else
-		cout<<gpu::getCudaEnabledDeviceCount()<<" CUDA GPU is not available. Will use cpu to compute bag of words model."<<endl;
-*/
-	//bagWordsFeature bwFt(fName, useGpu);
-
-
 
 	float *arr[_runNum];
 	
-	Mat feature2[_runNum], feature1[_runNum];
+	Mat feature2[_runNum];
 
-	string fileName[_runNum], fileNameR;
-	string fileTp = ".avi", dName1, dName2[_runNum];
+	string fileName[_runNum];
+	string fileTp = ".avi", dName2[_runNum];
 	//char tmp[1024];
 	char sName[1024];
 	int redoNum;
@@ -218,14 +196,11 @@ int main() {
 		arr[i] = new float[fvDim];
 	}
 
-	if (samMethod != 1)
+	for (int i = 0; i < _runNum; i++)
 	{
-		for (int i = 0; i < _runNum; i++)
-		{
-			itoa(i+1, tstr, 10);
-			dName2[i] = (string)"run"+(string)tstr;
-			_mkdir(dName2[i].c_str());
-		}
+		itoa(i+1, tstr, 10);
+		dName2[i] = (string)"run"+(string)tstr;
+		_mkdir(dName2[i].c_str());
 	}
 
 
@@ -236,16 +211,11 @@ int main() {
 	for (int i = trainSt; i < trainEnd; i++)
 	{
 		itoa(i+1, tstr, 10);
-	
-		if (samMethod != 1)
+		for (int j = 0; j < _runNum; j++)
 		{
-			itoa(i+1, tstr, 10);
-			for (int j = 0; j < _runNum; j++)
-			{
-				itoa(j+1, tstr1, 10);
-				dName2[j] = (string)"run"+(string)tstr1+(string)"\\random"+(string)tstr;
-				_mkdir(dName2[j].c_str());
-			}
+			itoa(j+1, tstr1, 10);
+			dName2[j] = (string)"run"+(string)tstr1+(string)"\\random"+(string)tstr;
+			_mkdir(dName2[j].c_str());
 		}
 		
 		dNm = dirName + (string)tstr + (string)"\\";
@@ -257,68 +227,66 @@ int main() {
 			strcpy(sName, dNm.c_str());
 			strcat(sName, FileData.cFileName);
 			std::cout<<"Processing file: "<<sName<<endl;
-			
-			if (samMethod != 1)
-			{
-				//dscpt.setSamplingStrideSz(Point3f(0.5f,0.5f,0.8f));
-				//dscpt.setSamplingStrideSz(Point3f(0.8f,0.8f,0.8f));
-				if(!dscpt.preProcessing(sName, maxFrames))
-				{
-					std::cout<<"Unable to process loaded video for  computing training features 2!\n";
-					discoverUO::wait();
-					exit(-1);
-				}
-				for (int j = 0; j < _runNum; j++)
-				{
-					dscpt.getRandomFeatures(feature2[j], samNum, seed[j]);
-				}
-				
-				if(redoNum = dscpt.reProcessNum())   //if redoNum("dscpt.reProcessNum()") is not equal to zero
-				{
-					int dSz0, dSz1;
-					std::cout<<"redo...\n";
-					for (int i0 = 1; i0 <= redoNum; i0++)
-					{
-						dSz0 = dscpt.getSamplingSz();
-						dscpt.re_Processing(sName, maxFrames, i0);
-					
-						dSz1 = dscpt.getSamplingSz();
-						Mat tmp0;
-						for (int j = 0; j < _runNum; j++)
-						{
-							if (i0 < redoNum)
-								dscpt.getRandomFeatures(tmp0, samNum, seed[j]);
-							else
-								dscpt.getRandomFeatures(tmp0, ((float)dSz1/(float)dSz0)*samNum, seed[j]);
-						
-							feature2[j].push_back(tmp0);
-						}
-					}
-				}
-				for (int j = 0; j < _runNum; j++)
-				{
-					tmpPCA = Mat(feature2[j].rows, pcaCols[_channels], feature2[j].type());
-#pragma omp parallel for 
-					for(int i0 = 0; i0 < _channels; i0++)
-					{
-						Mat vec = feature2[j].colRange(ftCols[i0], ftCols[i0+1]);
-						Mat coeffs = tmpPCA.colRange(pcaCols[i0], pcaCols[i0+1]);
-						pca0[i0].project(vec, coeffs);
 
-					}
-					fvFt.getFeatures(tmpPCA, arr[j]);
-					feature2[j].release();
-				}
+			//dscpt.setSamplingStrideSz(Point3f(0.5f,0.5f,0.8f));
+			//dscpt.setSamplingStrideSz(Point3f(0.8f,0.8f,0.8f));
+			if(!dscpt.preProcessing(sName, maxFrames))
+			{
+				std::cout<<"Unable to process loaded video for  computing training features 2!\n";
+				discoverUO::wait();
+				exit(-1);
+			}
+			for (int j = 0; j < _runNum; j++)
+			{
+				dscpt.getRandomFeatures(feature2[j], samNum, seed[j]);
+			}
 				
-				for (int j = 0; j < _runNum; j++)
+			if(redoNum = dscpt.reProcessNum())   //if redoNum("dscpt.reProcessNum()") is not equal to zero
+			{
+				int dSz0, dSz1;
+				std::cout<<"redo...\n";
+				for (int i0 = 1; i0 <= redoNum; i0++)
 				{
-					fileName[j] = dName2[j] + (string)"\\" + (string)(FileData.cFileName);
-					fileName[j].replace(fileName[j].find(fileTp),fileTp.length(),".dat");
-					ofile[j] = new BinClusterOutStream<float> (fileName[j]);
-					ofile[j]->write(arr[j], fvDim);
-					delete ofile[j];
+					dSz0 = dscpt.getSamplingSz();
+					dscpt.re_Processing(sName, maxFrames, i0);
+					
+					dSz1 = dscpt.getSamplingSz();
+					Mat tmp0;
+					for (int j = 0; j < _runNum; j++)
+					{
+						if (i0 < redoNum)
+							dscpt.getRandomFeatures(tmp0, samNum, seed[j]);
+						else
+							dscpt.getRandomFeatures(tmp0, ((float)dSz1/(float)dSz0)*samNum, seed[j]);
+						
+						feature2[j].push_back(tmp0);
+					}
 				}
 			}
+			for (int j = 0; j < _runNum; j++)
+			{
+				tmpPCA = Mat(feature2[j].rows, pcaCols[_channels], feature2[j].type());
+#pragma omp parallel for 
+				for(int i0 = 0; i0 < _channels; i0++)
+				{
+					Mat vec = feature2[j].colRange(ftCols[i0], ftCols[i0+1]);
+					Mat coeffs = tmpPCA.colRange(pcaCols[i0], pcaCols[i0+1]);
+					pca0[i0].project(vec, coeffs);
+
+				}
+				fvFt.getFeatures(tmpPCA, arr[j]);
+				feature2[j].release();
+			}
+				
+			for (int j = 0; j < _runNum; j++)
+			{
+				fileName[j] = dName2[j] + (string)"\\" + (string)(FileData.cFileName);
+				fileName[j].replace(fileName[j].find(fileTp),fileTp.length(),".dat");
+				ofile[j] = new BinClusterOutStream<float> (fileName[j]);
+				ofile[j]->write(arr[j], fvDim);
+				delete ofile[j];
+			}
+			
 			if (FindNextFile(hFind, &FileData) == 0) break; // stop when none left
 		}
 	}
@@ -328,27 +296,13 @@ int main() {
 	dura = double((ends-starts))/ CLOCKS_PER_SEC;
 	cout<<"Prcessed total frames : "<<frameCount<<" in "<<dura<<" seconds."<<endl;
 	cout<<"It is equal to: "<<double(frameCount)/dura<<" frames per second."<<endl;
-	//cout<<"Prcessed total frames : "<<frameCount<<" in "<<dur0/CLOCKS_PER_SEC<<" seconds for bag of feature matches."<<endl;
-	//cout<<"It is equal to: "<<double(frameCount)/(dur0/CLOCKS_PER_SEC)<<" frames per second for bag of feature matches."<<endl;
-	//cout<<"Prcessed total frames : "<<frameCount<<" in "<<dur1/CLOCKS_PER_SEC<<" seconds for integral video."<<endl;
-	//cout<<"It is equal to: "<<double(frameCount)/(dur1/CLOCKS_PER_SEC)<<" frames per second for integral video."<<endl;
-	//cout<<"Prcessed total frames : "<<frameCount<<" in "<<dur2/CLOCKS_PER_SEC<<" seconds for 3D HOG feature computation."<<endl;
-	//cout<<"It is equal to: "<<double(frameCount)/(dur2/CLOCKS_PER_SEC)<<" frames per second for 3D HOG feature computation."<<endl;
 #endif
 	for (int i = 0; i < _runNum; i++)
 	{
 		delete []arr[i];
 	}
-	
-	//std::cout<<out<<" "<<labels.rows<<" "<<labels.cols<<" "<<labels.type()<<" "<<centers->rows<<" "<<centers->cols<<" "<<centers->type();
 
-	//Mat tt;
-	//int oo=countNonZero(tt);
-	//std::cout<<tt.rows<<" "<<tt.cols<<" "<<oo;
 	discoverUO::wait();
-	//std::cout<<discoverUO::timestamp();
-	//std::cin.get();
-	//cin.get();
 	return 0;
 }
 

@@ -26,16 +26,6 @@ Version No   : 1.00
 
 //using namespace cv;
 
-
-void dominantColor(Mat& colorSrc, Mat& grayDst)
-{
-	vector<Mat> gray;
-	split(colorSrc, gray);
-	grayDst = gray[0];
-	for(int i = 1; i < gray.size(); i++)
-		grayDst = cv::max(grayDst, gray[i]);
-}
-
 IntegralVideo::IntegralVideo(const string& fName, int bins, bool fullOri, Point3f rt2ps,
 							 float reSzRatio,  int stFrame, int endFrame):_nbins(bins), _fullOri(fullOri)
 { 
@@ -188,7 +178,7 @@ bool IntegralVideo::computeIntegVideo(const string& fName_, Point3f rt2ps, float
 #endif  // _USE_OCL_OPTICAL_FLOW_
 
 	cap>>im;
-	while(!(im.empty()) && _ivBps <= MAX_VIDEO_BUFFER && _ivBps < endFrame - stFrame - 1)
+	while(!(im.empty()) && _ivBps <= MAX_VIDEO_BUFFER && _ivBps < endFrame - stFrame )
 	{
 		//processing image with grey gradient
 		if (im.channels() >= 3) 
@@ -226,10 +216,11 @@ bool IntegralVideo::computeIntegVideo(const string& fName_, Point3f rt2ps, float
 	
 #endif  // _USE_OCL_OPTICAL_FLOW_
 	
-		//remove noise optical flow values by theshold those absolute values large than 100 to zero
-		//this will avoid unstable computation due to the wrong very large optical flow values, such as 10E7
-		threshold(oFlows[0],oFlows[0],100,10000,THRESH_TOZERO_INV);
-		threshold(oFlows[0],oFlows[0],-100,10000,THRESH_TOZERO);
+		//remove noise optical flow values by threshold those absolute values large than 100 to zero
+		//if not using threshold, the results could be better 1% improvements on HMDB51, however, sometimes it is unstable due to the infinite values of wrong optical flow
+		//this will avoid unstable computation due to the wrong very large optical flow values, such as 10E7 or -10E7
+		threshold(oFlows[0],oFlows[0],100,10000,THRESH_TOZERO_INV);    // if oFlows[0]>100, set the value to zeros
+		threshold(oFlows[0],oFlows[0],-100,10000,THRESH_TOZERO);  // if oFlows[0]<-100, set the value to zeros
 		threshold(oFlows[1],oFlows[1],100,10000,THRESH_TOZERO_INV);
 		threshold(oFlows[1],oFlows[1],-100,10000,THRESH_TOZERO);
 

@@ -85,7 +85,7 @@ public:
 		_dataDims = 0;
 		//vl_set_num_threads(0) ; /* use the default number of threads */
 
-		if(mTp==0 )
+		if(mTp==0 )  //compute the GMMs from the input files (iFile)
 		{
 			_init = KMeans;
 			_kmeans = new VlKMeans*[channels];
