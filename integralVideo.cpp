@@ -219,10 +219,19 @@ bool IntegralVideo::computeIntegVideo(const string& fName_, Point3f rt2ps, float
 		//remove noise optical flow values by threshold those absolute values large than 100 to zero
 		//if not using threshold, the results could be better 1% improvements on HMDB51, however, sometimes it is unstable due to the infinite values of wrong optical flow
 		//this will avoid unstable computation due to the wrong very large optical flow values, such as 10E7 or -10E7
+	/*
 		threshold(oFlows[0],oFlows[0],100,10000,THRESH_TOZERO_INV);    // if oFlows[0]>100, set the value to zeros
 		threshold(oFlows[0],oFlows[0],-100,10000,THRESH_TOZERO);  // if oFlows[0]<-100, set the value to zeros
 		threshold(oFlows[1],oFlows[1],100,10000,THRESH_TOZERO_INV);
 		threshold(oFlows[1],oFlows[1],-100,10000,THRESH_TOZERO);
+	*/
+		if(!checkRange(oFlows[0], 1, NULL, -1e9, 1e9) || !checkRange(oFlows[1], 1, NULL, -1e9, 1e9))
+		{
+			threshold(oFlows[0],oFlows[0],1e9,10000,THRESH_TOZERO_INV);
+			threshold(oFlows[0],oFlows[0],-1e9,10000,THRESH_TOZERO);
+			threshold(oFlows[1],oFlows[1],1e9,10000,THRESH_TOZERO_INV);
+			threshold(oFlows[1],oFlows[1],-1e9,10000,THRESH_TOZERO);
+		}
 
 		Mat tmpPs, tmp0;
 		for(int i0 = 0; i0 < 2; i0++)

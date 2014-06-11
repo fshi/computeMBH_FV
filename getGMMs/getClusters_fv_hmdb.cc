@@ -186,7 +186,7 @@ int main()
 	dscpt.clear();
 	delete []rDataNum;
 
-//reading randomly chosen 200000 features from file
+//reading randomly chosen 150000 features from file
 	iFile = new BinClusterInStream (rFileNm);
 	iFile->read(cluMat);
 	delete iFile;
