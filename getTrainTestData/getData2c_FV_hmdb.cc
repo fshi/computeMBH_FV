@@ -38,7 +38,10 @@ const int _partsSz = 64*8;  //part size
 
 const int const _Dim[4] = {32, 64, 32, 64};
 const int _numClusters = 128;  //K = 128 
+//const string _pcaMat = "pca_Mat.yml.gz";  //compressed precomputed pca projective matrix 
 const string _pcaMat = "pca_Mat.yml";  //precomputed pca projective matrix
+//const string _gmmFileType = ".yml.gz";//use compressed files to save learnt gmms
+const string _gmmFileType = ".yml";
 
 bool loadPCA(PCA* pca0, const string& preComputedFl);
 
@@ -146,8 +149,8 @@ int main() {
 	for (int i = 0; i < _channels; i++)
 	{
 		//fName[i] = (string)"randData100kc"  + (string)itoa(i,tmpCs,10) + (string)".dat";  //input training data for computing GMMs
-		//gmmFile[i] = (string)"gmmResults"  + (string)itoa(i,tmpCs,10) + (string)".yml";
-		fName[i] = (string)"gmmResults"  + (string)itoa(i,tmpCs,10) + (string)".yml";  //pre-computed GMMs
+		//gmmFile[i] = (string)"gmmResults"  + (string)itoa(i,tmpCs,10) + _gmmFileType;
+		fName[i] = (string)"gmmResults"  + (string)itoa(i,tmpCs,10) + _gmmFileType;  //pre-computed GMMs
 	}
 	
 	fvEncoding fvFt(fName, _channels, _Dim, _numClusters, 2, NULL);  //use pre-computed GMMs

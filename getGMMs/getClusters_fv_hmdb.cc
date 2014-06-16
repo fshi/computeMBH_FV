@@ -31,7 +31,10 @@ const int _pcaPsSz = 64;   //reduce the part dim from 64*8 to 64
 
 const int const _Dim[4] = {32, 64, 32, 64};
 const int _numClusters = 128;  //K = 128 
+//const string _pcaMat = "pca_Mat.yml.gz";  //compressed precomputed pca projective matrix 
 const string _pcaMat = "pca_Mat.yml";  //precomputed pca projective matrix
+//const string _gmmFileType = "yml.gz";//use compressed files to save learnt gmms
+const string _gmmFileType = "yml";
 
 using namespace cv;
 
@@ -251,7 +254,7 @@ int main()
 
 	cout<<"Now writing pca matrices...\n";
 	//Write matrices to pca_mat.yml
-	FileStorage fs("pca_Mat.yml", FileStorage::WRITE);
+	FileStorage fs(_pcaMat, FileStorage::WRITE);
 	fs << "number of channels" << chnl;
 	fs << "Mean0" << pca0[0].mean;
 	fs << "Eigenvalues0" << pca0[0].eigenvalues;
@@ -279,7 +282,7 @@ cout<<"now performing GMM learning...\n";
 	for (int i = 0; i < chnl; i++)
 	{
 		//fName[i] = (string)"randData100kc"  + (string)itoa(i,tmpCs,10) + (string)".dat";
-		gmmFile[i] = (string)"gmmResults"  + (string)itoa(i,tmpCs,10) + (string)".yml";
+		gmmFile[i] = (string)"gmmResults"  + (string)itoa(i,tmpCs,10) + _gmmFileType;
 
 	}
 	

@@ -33,17 +33,17 @@ Parameters::
 
 Pre-computed GMM (k=128) and pca projection matrix::
 
-	You can use the pre-computed GMMs and pca matrix for the attached parameter “MBH_parameters_input.txt”. If you change the parameters, it is important to recompute the GMMs and pca with attached project "getGMM". The pre-computed GMM files can be found inside the sub-directory: "\computed GMMs". "gmmResults0.yml" is for root, "gmmResults1.yml" is for parts, and "pca_Mat.yml" is for PCA. You need to copy them into your working directory.
+	You can use the pre-computed GMMs and pca matrix for the attached parameter “MBH_parameters_input.txt”. If you change the parameters, it is important to recompute the GMMs and pca with attached project "getGMMs". The pre-computed GMM files can be found inside the sub-directory: "\computed GMMs". "gmmResults0.yml"(MBHx) and "gmmResults2.yml"(MBHy) are for root, "gmmResults1.yml" (MBHx)and "gmmResu3ts1.yml" (MBHy) are for parts, and "pca_Mat.yml" is for PCA. You need to copy them into your working directory.
 
      
 Default::
 
      The default setup of the code is: Dual_L1 optical flow algorithm with OCL (GPU) computation. If you don't have GPU or want to use efficient Farmeback optical flow method, you need to 
-change the code in "integralVideo.cpp" by undefine: "#define _USE_OCL_OPTICAL_FLOW_" and "#define _USE_DUAL_L1_OF_ " 
+change the code in "integralVideo.cpp" by undefining: "#define _USE_OCL_OPTICAL_FLOW_" and "#define _USE_DUAL_L1_OF_ " 
 
 Steps to do testing/training:
 
-1.  To run the program, you need to have the dataset videos, and replace (const string dirName = "C:\\dataSets\\hmdb51\\";) with your dataset directory. For simplicity, the videos from the same class are stored in a subdirectory. One class, one subdirectory, marked with 1,2,3...
+1.  To run the program, you need to have the dataset videos, and replace (const string dirName = "C:\\Feng\\hmdb51\\";) with your dataset directory. For simplicity, the videos from the same class are stored in a subdirectory. One class, one subdirectory, marked with 1,2,3...
 2. You need to include “MBH_parameters_input.txt” file inside your working directory as input parameters.
 3. You can learn GMMs and pca projection matrix by running "getGMM.exe". However, you can also use the pre-computed GMM files inside the sub-directory: "\computed GMMs". 
 4. Next step is to run "getTrainTestData.exe". After running the *getTrainTestData*, you should get the files representing each video file with bag-of-features representation (one .dat file for one video clip). I assume that you are testing with HMDB51 dataset, and all the .dat files are stored inside the sub-directory, such as random1, random2,..., random51.
