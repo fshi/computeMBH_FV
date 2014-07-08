@@ -34,7 +34,7 @@ const int _numClusters = 128;  //K = 128
 //const string _pcaMat = "pca_Mat.yml.gz";  //compressed precomputed pca projective matrix 
 const string _pcaMat = "pca_Mat.yml";  //precomputed pca projective matrix
 //const string _gmmFileType = "yml.gz";//use compressed files to save learnt gmms
-const string _gmmFileType = "yml";
+const string _gmmFileType = ".yml";
 
 using namespace cv;
 
